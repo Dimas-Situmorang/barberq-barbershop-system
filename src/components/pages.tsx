@@ -697,7 +697,8 @@ export function CustomerReservationDetailPage() {
   const { currentUser } = data;
   const router = useRouter();
   const { services, barbers, customers, reservations, loading, refresh } = useLookups();
-  const reservation = reservations.find((item) => item.id === params.id && item.customerId === currentUser?.id);
+  const routeId = typeof params?.id === "string" ? params.id : "";
+  const reservation = reservations.find((item) => item.id === routeId && item.customerId === currentUser?.id);
 
   return (
     <RequireRole role="customer">
@@ -768,21 +769,27 @@ export function CustomerInboxPage() {
 export function CustomerMessageDetailPage() {
   const params = useParams<{ id: string }>();
   const data = useData();
+  const routeId = typeof params?.id === "string" ? params.id : "";
   const [message, setMessage] = useState<Message | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!routeId) {
+      setError("Pesan tidak ditemukan.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     void data
-      .getMessage(params.id)
+      .getMessage(routeId)
       .then(async (item) => {
         setMessage(item);
         if (!item.isRead) setMessage(await data.markMessageRead(item.id));
       })
       .catch((caught) => setError(caught instanceof Error ? caught.message : "Pesan belum tersedia."))
       .finally(() => setLoading(false));
-  }, [data, params.id]);
+  }, [data, routeId]);
 
   return (
     <RequireRole role="customer">
@@ -918,7 +925,8 @@ export function BarberReservationDetailPage() {
   const params = useParams<{ id: string }>();
   const { currentUser } = useData();
   const { services, barbers, customers, reservations, loading } = useLookups();
-  const reservation = reservations.find((item) => item.id === params.id && item.barberId === currentUser?.id);
+  const routeId = typeof params?.id === "string" ? params.id : "";
+  const reservation = reservations.find((item) => item.id === routeId && item.barberId === currentUser?.id);
   return (
     <RequireRole role="barber">
       <PageTitle title="Detail Reservasi" />
@@ -1105,7 +1113,8 @@ export function AdminReservationDetailPage() {
   const params = useParams<{ id: string }>();
   const data = useData();
   const { services, barbers, customers, reservations, loading, refresh } = useLookups();
-  const reservation = reservations.find((item) => item.id === params.id);
+  const routeId = typeof params?.id === "string" ? params.id : "";
+  const reservation = reservations.find((item) => item.id === routeId);
   const [adminMessage, setAdminMessage] = useState("");
   const [paymentRejectedReason, setPaymentRejectedReason] = useState("");
   const [cancelForm, setCancelForm] = useState<{
