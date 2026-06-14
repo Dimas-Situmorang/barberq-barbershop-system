@@ -12,6 +12,6 @@
     "resolveJsonModule": true,
     "types": ["node", "express"]
   },
-  "include": ["server/**/*.ts", "server/**/*.d.ts"],
+  "include": ["server/**/*.ts", "server/**/*.d.ts", "api/**/*.ts"],
   "exclude": ["node_modules", ".next", "dist"]
 }

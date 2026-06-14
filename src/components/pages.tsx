@@ -358,8 +358,8 @@ export function BarbersPage() {
 export function LoginPage() {
   const data = useData();
   const router = useRouter();
-  const [email, setEmail] = useState("customer@barberq.com");
-  const [password, setPassword] = useState("customer123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   async function submit(event: FormEvent) {
@@ -375,41 +375,21 @@ export function LoginPage() {
 
   return (
     <PublicLayout>
-      <section className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-[1fr_420px]">
-        <div>
-          <p className="text-sm font-bold uppercase text-mint">Demo akun</p>
-          <h1 className="mt-2 text-4xl font-black text-ink md:text-6xl">Masuk ke BarberQ</h1>
-          <div className="mt-6 grid gap-3 text-sm">
-            {[
-              ["Customer", "customer@barberq.com", "customer123"],
-              ["Barber", "rio@barberq.com", "barber123"],
-              ["Admin", "admin@barberq.com", "admin123"],
-              ["Owner", "owner@barberq.com", "owner123"]
-            ].map(([label, mail, demoPassword]) => (
-              <button
-                className="focus-ring flex items-center justify-between rounded-md border border-ink/10 bg-white px-4 py-3 text-left font-semibold shadow-sm"
-                key={mail}
-                onClick={() => {
-                  setEmail(mail);
-                  setPassword(demoPassword);
-                }}
-              >
-                <span>{label}</span>
-                <span className="text-ink/55">{mail}</span>
-              </button>
-            ))}
+      <section className="mx-auto grid min-h-[76vh] max-w-md place-items-center px-4 py-10">
+        <Card className="w-full">
+          <div className="mb-6 text-center">
+            <h1 className="text-3xl font-black text-ink">Masuk ke BarberQ</h1>
+            <p className="mt-2 text-sm leading-6 text-ink/60">Gunakan akun yang sudah terdaftar untuk mengakses sistem.</p>
           </div>
-        </div>
-        <Card>
           <form className="grid gap-4" onSubmit={submit}>
             <Field label="Email">
-              <input className={inputClass} onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
+              <input className={inputClass} onChange={(event) => setEmail(event.target.value)} placeholder="nama@email.com" required type="email" value={email} />
             </Field>
             <Field label="Password">
-              <input className={inputClass} onChange={(event) => setPassword(event.target.value)} type="password" value={password} />
+              <input className={inputClass} onChange={(event) => setPassword(event.target.value)} placeholder="Masukkan password" required type="password" value={password} />
             </Field>
             <ErrorText message={error} />
-            <Button type="submit">Login</Button>
+            <Button className="w-full" type="submit">Login</Button>
             <Link className="text-center text-sm font-semibold text-mint" href="/register">
               Buat akun customer
             </Link>
