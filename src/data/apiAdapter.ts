@@ -48,8 +48,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(body?.message || "Request API gagal.");
+    const text = await response.text().catch(() => "");
+    let message = "";
+    try {
+      const body = JSON.parse(text) as { message?: string; detail?: string };
+      message = body.detail ? `${body.message ?? "Request API gagal."} ${body.detail}` : body.message || "";
+    } catch {
+      message = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    }
+    throw new Error(message || `Request API gagal. Status ${response.status}.`);
   }
 
   if (response.status === 204) return undefined as T;

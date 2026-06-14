@@ -81,17 +81,54 @@ function paymentLabel(type?: PaymentType) {
   return "-";
 }
 
-function readProofImage(file?: File | null) {
-  return new Promise<{ dataUrl: string; name: string }>((resolve, reject) => {
-    if (!file) {
-      resolve({ dataUrl: "", name: "" });
-      return;
-    }
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve({ dataUrl: String(reader.result || ""), name: file.name });
+    reader.onload = () => resolve(String(reader.result || ""));
     reader.onerror = () => reject(new Error("Bukti pembayaran gagal dibaca."));
     reader.readAsDataURL(file);
   });
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Bukti pembayaran harus berupa gambar yang valid."));
+    image.src = src;
+  });
+}
+
+async function readProofImage(file?: File | null) {
+  if (!file) return { dataUrl: "", name: "" };
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Bukti pembayaran harus berupa file gambar.");
+  }
+
+  const rawDataUrl = await fileToDataUrl(file);
+  const image = await loadImage(rawDataUrl);
+  const maxSide = 900;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Browser tidak dapat memproses bukti pembayaran.");
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  let quality = 0.78;
+  let dataUrl = canvas.toDataURL("image/jpeg", quality);
+  while (dataUrl.length > 900_000 && quality > 0.45) {
+    quality -= 0.08;
+    dataUrl = canvas.toDataURL("image/jpeg", quality);
+  }
+
+  if (dataUrl.length > 1_200_000) {
+    throw new Error("Ukuran bukti pembayaran terlalu besar. Gunakan gambar yang lebih kecil.");
+  }
+
+  return { dataUrl, name: file.name };
 }
 
 function canPreviewProof(value?: string) {
